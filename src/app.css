@@ -1,0 +1,280 @@
+/* ---------- Theme tokens ---------- */
+:root {
+  color-scheme: light;
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --input-bg: #ffffff;
+  --line: #d9dde3;
+  --divider: #e8ebef;
+  --ink: #111827;
+  --subtle: #374151;
+  --muted: #5b6472;
+  --accent: #0369a1;
+  --accent-soft: #e0f2fe;
+  --accent-ink: #075985;
+  --on-accent: #ffffff;
+  --focus-ring: #bae6fd;
+
+  --ok: #047857;
+  --ok-bg: #ecfdf5;
+  --ok-bd: #a7f3d0;
+  --ok-bar: #10b981;
+  --pass: #b45309;
+  --pass-bg: #fffbeb;
+  --pass-bd: #fde68a;
+  --pass-bar: #f59e0b;
+  --bad: #b91c1c;
+  --bad-bg: #fef2f2;
+  --bad-bd: #fecaca;
+  --bad-bar: #ef4444;
+
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --radius: 12px;
+}
+
+/* Dark tokens: forced with data-theme="dark", or following the system (below). Keep both blocks in sync. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0e1014;
+  --panel: #12151b;
+  --card: #161a21;
+  --input-bg: #0e1014;
+  --line: #2a303b;
+  --divider: #20252e;
+  --ink: #e6e8ec;
+  --subtle: #c9ced6;
+  --muted: #9aa3b2;
+  --accent: #7dd3fc;
+  --accent-soft: #0c2a3b;
+  --accent-ink: #bae6fd;
+  --on-accent: #0e1014;
+  --focus-ring: #0c4a6e;
+
+  --ok: #6ee7b7;
+  --ok-bg: #0d2a22;
+  --ok-bd: #1f5a47;
+  --ok-bar: #34d399;
+  --pass: #fcd34d;
+  --pass-bg: #2b2310;
+  --pass-bd: #5c4a17;
+  --pass-bar: #fbbf24;
+  --bad: #fca5a5;
+  --bad-bg: #2e1416;
+  --bad-bd: #6b2a2e;
+  --bad-bar: #f87171;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0e1014;
+    --panel: #12151b;
+    --card: #161a21;
+    --input-bg: #0e1014;
+    --line: #2a303b;
+    --divider: #20252e;
+    --ink: #e6e8ec;
+    --subtle: #c9ced6;
+    --muted: #9aa3b2;
+    --accent: #7dd3fc;
+    --accent-soft: #0c2a3b;
+    --accent-ink: #bae6fd;
+    --on-accent: #0e1014;
+    --focus-ring: #0c4a6e;
+
+    --ok: #6ee7b7;
+    --ok-bg: #0d2a22;
+    --ok-bd: #1f5a47;
+    --ok-bar: #34d399;
+    --pass: #fcd34d;
+    --pass-bg: #2b2310;
+    --pass-bd: #5c4a17;
+    --pass-bar: #fbbf24;
+    --bad: #fca5a5;
+    --bad-bg: #2e1416;
+    --bad-bd: #6b2a2e;
+    --bad-bar: #f87171;
+  }
+}
+
+/* ---------- Base ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+input:focus-visible {
+  outline: none;
+}
+h1,
+h2,
+h3 {
+  margin: 0;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---------- Shared pieces ---------- */
+.label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+}
+.mono {
+  font-family: var(--mono);
+}
+kbd {
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 1px 6px;
+  border: 1px solid var(--line);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  color: var(--ink);
+}
+
+.btn {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+}
+.btn:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+.btn-primary {
+  min-height: 44px;
+  padding: 0 22px;
+  border: none;
+  border-radius: 10px;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 15px;
+  font-weight: 600;
+}
+.btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.btn-danger {
+  color: var(--bad);
+  border-color: var(--bad-bd);
+}
+
+/* Toggle chip: aria-pressed drives the look. */
+.chip {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--card);
+  font-size: 13px;
+}
+.chip[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+/* Segmented control */
+.seg {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--bg);
+  border: 1px solid var(--divider);
+}
+.seg button {
+  min-height: 38px;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.seg button[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.text-input {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--input-bg);
+  font-size: 14px;
+}
+.text-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+.text-input::placeholder {
+  color: var(--muted);
+}
+
+/* Status colours */
+.is-correct {
+  --s-fg: var(--ok);
+  --s-bg: var(--ok-bg);
+  --s-bd: var(--ok-bd);
+}
+.is-passable {
+  --s-fg: var(--pass);
+  --s-bg: var(--pass-bg);
+  --s-bd: var(--pass-bd);
+}
+.is-wrong {
+  --s-fg: var(--bad);
+  --s-bg: var(--bad-bg);
+  --s-bd: var(--bad-bd);
+}

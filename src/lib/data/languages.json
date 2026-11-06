@@ -1,0 +1,14 @@
+[
+  {
+    "code": "es",
+    "name": "Spanish",
+    "native": "Español",
+    "verbCount": 40
+  },
+  {
+    "code": "it",
+    "name": "Italian",
+    "native": "Italiano",
+    "verbCount": 102
+  }
+]
