@@ -11,7 +11,10 @@ npm run dev        # http://localhost:5173
 
 ## Update the verb data
 
-The source of truth is the two spreadsheets in this folder (`spanish-verbs.xlsx`, `italian-verbs.xlsx`): one sheet per tense, the `reg`/`irreg` flag in column A, the infinitive in column B, then one column per person.
+The conjugations live in two spreadsheets in this folder (`spanish-verbs.xlsx`, `italian-verbs.xlsx`): one sheet per tense, the group in column A, the infinitive in column B, then one column per person. A cell can hold whole alternatives separated by ` / ` (`lui ha piovuto / è piovuto`); `-` means the form doesn't exist and is never asked.
+
+- **Spanish**: the group comes from column A (`reg` / `irreg`).
+- **Italian**: **`italian_list.xlsx` decides which verbs are used and their group** (column A = infinitive, column B = `reg`, `irreg`, `spelling` or `participio passato`; anything after the infinitive, like “(-sc- suffix)”, is ignored). Verbs present in `italian-verbs.xlsx` but not in the list are skipped, so adding one back only takes a line in the list.
 
 ```bash
 npm run convert

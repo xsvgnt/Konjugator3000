@@ -3,12 +3,17 @@
 //   npm run convert
 //
 // Input : one .xlsx per language (see LANGUAGES below) + data/translations.en.json
+//         (+ a verb list with groups, for languages that have one)
 // Output: src/lib/data/<code>.json, src/lib/data/languages.json, data/conversion-report.md
 //
 // Spreadsheet layout (one sheet per tense):
 //   row 1      : (empty) (empty) pronoun1 ... pronoun6
-//   next rows  : reg|irreg  infinitive  form1 ... form6
-// Sheets listed with `columns` hold non-personal forms (gerund, participle): one column each.
+//   next rows  : group  infinitive  form1 ... form6
+// Sheets listed with `columns` hold non-personal forms (gerund, participles): one column each.
+//
+// Verb groups come either from column A of every sheet (Spanish: reg/irreg) or from a separate
+// verb list (Italian: italian_list.xlsx, column A = infinitive, column B = group). With a verb
+// list, only the verbs it names are converted; other rows in the sheets are skipped.
 
 import ExcelJS from 'exceljs';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
@@ -22,6 +27,8 @@ const LANGUAGES = [
   {
     code: 'es', name: 'Spanish', native: 'Español', file: 'spanish-verbs.xlsx',
     pronouns: ['yo', 'tú', 'él', 'nosotros', 'vosotros', 'ellos'],
+    groups: [{ id: 'regular', label: 'Regular' }, { id: 'irregular', label: 'Irregular' }],
+    groupValues: { reg: 'regular', irreg: 'irregular' },
     sheets: {
       'Indicativo Presente': { id: 'ind-presente', mood: 'Indicativo', name: 'Presente' },
       'Indicativo Pretérito': { id: 'ind-preterito', mood: 'Indicativo', name: 'Pretérito' },
@@ -44,30 +51,41 @@ const LANGUAGES = [
     code: 'it', name: 'Italian', native: 'Italiano', file: 'italian-verbs.xlsx',
     pronouns: ['io', 'tu', 'lui/lei', 'noi', 'voi', 'loro'],
     cellsStartWithPronoun: true,
+    verbList: 'italian_list.xlsx',
+    groups: [
+      { id: 'regular', label: 'Regular' },
+      { id: 'irregular', label: 'Irregular' },
+      { id: 'spelling', label: 'Spelling change' },
+      { id: 'participle', label: 'Irregular participle' }
+    ],
+    groupValues: { reg: 'regular', irreg: 'irregular', spelling: 'spelling', 'participio passato': 'participle' },
     // Shorthand the automatic expansion gets wrong: rewritten in full before expanding.
     shorthandFixes: {
       'aprii/ersi': 'aprii/apersi',
       'aprì/erse': 'aprì/aperse',
       'aprirono/ersero': 'aprirono/apersero'
     },
+    // Order and blocks follow WordReference's conjugation pages. `block` groups tenses in the
+    // tense picker; `mood` is what a question shows ("Indicativo · Passato prossimo").
     sheets: {
       'Indicativo presente': { id: 'ind-presente', mood: 'Indicativo', name: 'Presente' },
-      'Indicativo passato prossimo': { id: 'ind-passato-prossimo', mood: 'Indicativo', name: 'Passato prossimo', compound: true },
       'Indicativo imperfetto': { id: 'ind-imperfetto', mood: 'Indicativo', name: 'Imperfetto' },
-      'Indicativo trapassato prossimo': { id: 'ind-trapassato-prossimo', mood: 'Indicativo', name: 'Trapassato prossimo', compound: true },
       'Indicativo passato remoto': { id: 'ind-passato-remoto', mood: 'Indicativo', name: 'Passato remoto' },
-      'Indicativo trapassato remoto': { id: 'ind-trapassato-remoto', mood: 'Indicativo', name: 'Trapassato remoto', compound: true },
       'Indicativo futuro semplice': { id: 'ind-futuro-semplice', mood: 'Indicativo', name: 'Futuro semplice' },
-      'Indicativo futuro anteriore': { id: 'ind-futuro-anteriore', mood: 'Indicativo', name: 'Futuro anteriore', compound: true },
+      'Indicativo passato prossimo': { id: 'ind-passato-prossimo', mood: 'Indicativo', block: 'Tempi composti', name: 'Passato prossimo', compound: true },
+      'Indicativo trapassato prossimo': { id: 'ind-trapassato-prossimo', mood: 'Indicativo', block: 'Tempi composti', name: 'Trapassato prossimo', compound: true },
+      'Indicativo trapassato remoto': { id: 'ind-trapassato-remoto', mood: 'Indicativo', block: 'Tempi composti', name: 'Trapassato remoto', compound: true },
+      'Indicativo futuro anteriore': { id: 'ind-futuro-anteriore', mood: 'Indicativo', block: 'Tempi composti', name: 'Futuro anteriore', compound: true },
       'Condizionale presente': { id: 'cond-presente', mood: 'Condizionale', name: 'Presente' },
       'Condizionale passato': { id: 'cond-passato', mood: 'Condizionale', name: 'Passato', compound: true },
       'Congiuntivo presente': { id: 'cong-presente', mood: 'Congiuntivo', name: 'Presente', promptPrefix: 'che' },
-      'Congiuntivo passato': { id: 'cong-passato', mood: 'Congiuntivo', name: 'Passato', promptPrefix: 'che', compound: true },
       'Congiuntivo imperfetto': { id: 'cong-imperfetto', mood: 'Congiuntivo', name: 'Imperfetto', promptPrefix: 'che' },
+      'Congiuntivo passato': { id: 'cong-passato', mood: 'Congiuntivo', name: 'Passato', promptPrefix: 'che', compound: true },
       'Congiuntivo trapassato': { id: 'cong-trapassato', mood: 'Congiuntivo', name: 'Trapassato', promptPrefix: 'che', compound: true },
       'Imperativo presente': { id: 'imp-presente', mood: 'Imperativo', name: 'Presente', noPronoun: true },
       'others': {
         columns: {
+          'participio presente': { id: 'participio-presente', mood: 'Forme nominali', name: 'Participio presente' },
           'partecipio passato': { id: 'participio-passato', mood: 'Forme nominali', name: 'Participio passato' },
           'gerundio presente': { id: 'gerundio-presente', mood: 'Forme nominali', name: 'Gerundio presente' }
         }
@@ -99,6 +117,22 @@ function seForm(word) {
   return m[1] + { a: 'se', as: 'ses', amos: 'semos', ais: 'seis', an: 'sen' }[m[2]];
 }
 
+/** Reads a verb list: column A = infinitive (anything after a space or "(" is a note), column B = group. */
+async function readVerbList(lang) {
+  const wb = new ExcelJS.Workbook();
+  await wb.xlsx.readFile(resolve(ROOT, lang.verbList));
+  const list = new Map();
+  wb.worksheets[0].eachRow({ includeEmpty: false }, (row, n) => {
+    const inf = clean(cellText(row.getCell(1).value)).split(/[\s(]/)[0];
+    if (!inf) return;
+    const value = clean(cellText(row.getCell(2).value));
+    const group = lang.groupValues[value];
+    if (!group) throw new Error(`${lang.verbList} row ${n}: unknown group “${value}” for ${inf}`);
+    list.set(inf, group);
+  });
+  return list;
+}
+
 const report = { lines: [], section(t) { this.lines.push('', `## ${t}`, ''); }, add(...l) { this.lines.push(...l); } };
 
 async function convert(lang) {
@@ -106,11 +140,13 @@ async function convert(lang) {
   await wb.xlsx.readFile(resolve(ROOT, lang.file));
   const translations = JSON.parse(readFileSync(resolve(ROOT, 'data/translations.en.json'), 'utf8'))[lang.code] ?? {};
   const pronounWords = new Set(lang.pronouns.flatMap((p) => p.split('/')));
+  const listed = lang.verbList ? await readVerbList(lang) : null;
   const issues = { flags: [], stray: [], noPronoun: [], missing: [], skipped: [], unknownSheets: [], variants: [] };
+  const notListed = new Set();
 
   const tenses = [];
   const verbs = new Map(); // infinitive -> verb
-  const flagSeen = new Map(); // infinitive -> {flag, sheet}
+  const flagSeen = new Map(); // infinitive -> {group, sheet}
 
   // Tenses follow the order of the config, not of the workbook.
   const sheetNames = wb.worksheets.map((ws) => ws.name);
@@ -136,12 +172,18 @@ async function convert(lang) {
     for (const { n, cells } of rows) {
       const [flag, inf] = cells;
       if (!inf) { if (cells.some(Boolean)) issues.skipped.push(`${sheetName} row ${n}: ${JSON.stringify(cells)}`); continue; }
-      const irregular = flag === 'irreg';
-      if (!flagSeen.has(inf)) flagSeen.set(inf, { irregular, sheet: sheetName });
-      else if (flagSeen.get(inf).irregular !== irregular) {
-        issues.flags.push(`${inf}: "${flag}" in “${sheetName}”, but “${flagSeen.get(inf).irregular ? 'irreg' : 'reg'}” in “${flagSeen.get(inf).sheet}”`);
+      if (listed && !listed.has(inf)) { notListed.add(inf); continue; }
+      let group = listed?.get(inf);
+      if (!listed) {
+        group = lang.groupValues[flag];
+        if (!flagSeen.has(inf)) flagSeen.set(inf, { group, sheet: sheetName });
+        else if (flagSeen.get(inf).group !== group) {
+          issues.flags.push(`${inf}: "${flag}" in “${sheetName}”, but “${flagSeen.get(inf).group}” in “${flagSeen.get(inf).sheet}”`);
+        }
+        group = flagSeen.get(inf).group;
+        if (!group) issues.flags.push(`${inf}: unknown group “${flag}” in “${sheetName}”`);
       }
-      if (!verbs.has(inf)) verbs.set(inf, { inf, en: translations[inf] ?? '', irregular: flagSeen.get(inf).irregular, forms: {} });
+      if (!verbs.has(inf)) verbs.set(inf, { inf, en: translations[inf] ?? '', group, forms: {} });
       const verb = verbs.get(inf);
 
       for (const { tense, cols } of outputs) {
@@ -182,6 +224,7 @@ async function convert(lang) {
 
   // Every verb should have every tense.
   const defective = [];
+  for (const inf of listed?.keys() ?? []) if (!verbs.has(inf)) issues.missing.push(`${inf}: in ${lang.verbList} but in none of the sheets`);
   for (const v of verbs.values()) {
     // Imperatives never have a first person singular, so they don't count.
     const gaps = tenses.filter((t) => t.personal && t.mood !== 'Imperativo' && (v.forms[t.id] ?? []).some((f) => !f)).length;
@@ -192,8 +235,10 @@ async function convert(lang) {
 
   const data = {
     code: lang.code, name: lang.name, native: lang.native, pronouns: lang.pronouns,
-    tenses: tenses.map(({ id, mood, name, personal, promptPrefix, answerPrefix }) =>
-      /* noPronoun, compound and seVariant are conversion-only settings */ ({ id, mood, name, personal, ...(promptPrefix && { promptPrefix }), ...(answerPrefix && { answerPrefix }) })),
+    groups: lang.groups,
+    // noPronoun, compound and seVariant are conversion-only settings.
+    tenses: tenses.map(({ id, mood, block, name, personal, promptPrefix, answerPrefix }) =>
+      ({ id, mood, block: block ?? mood, name, personal, ...(promptPrefix && { promptPrefix }), ...(answerPrefix && { answerPrefix }) })),
     verbs: [...verbs.values()].sort((a, b) => a.inf.localeCompare(b.inf, lang.code))
   };
   const out = resolve(ROOT, 'src/lib/data', `${lang.code}.json`);
@@ -201,14 +246,16 @@ async function convert(lang) {
   writeFileSync(out, JSON.stringify(data));
 
   const nItems = data.verbs.reduce((s, v) => s + Object.values(v.forms).flat().filter(Boolean).length, 0);
-  report.section(`${lang.name} (${lang.file})`);
-  report.add(`${data.verbs.length} verbs (${data.verbs.filter((v) => v.irregular).length} irregular), ${data.tenses.length} tenses, ${nItems} questions.`);
+  const perGroup = lang.groups.map((g) => `${data.verbs.filter((v) => v.group === g.id).length} ${g.label.toLowerCase()}`).join(', ');
+  report.section(`${lang.name} (${lang.file}${lang.verbList ? ` + ${lang.verbList}` : ''})`);
+  report.add(`${data.verbs.length} verbs (${perGroup}), ${data.tenses.length} tenses, ${nItems} questions.`);
   const list = (title, items, note) => {
     report.add('', `### ${title} (${items.length})`, '');
     if (note) report.add(note, '');
     report.add(items.length ? items.map((i) => (i.startsWith('|') ? i : `- ${i}`)).join('\n') : '_None._');
   };
-  list('Regular/irregular mismatches', issues.flags, 'The flag from the first sheet listing the verb is used.');
+  if (!listed) list('Group mismatches between sheets', issues.flags, 'The group from the first sheet listing the verb is used.');
+  else list(`In the sheets but not in ${lang.verbList} (skipped)`, [...notListed].sort().map((v) => v), undefined);
   list('Unexpected characters (removed)', issues.stray);
   list('Cells without a leading pronoun', issues.noPronoun);
   list('Missing data', issues.missing);

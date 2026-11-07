@@ -3,6 +3,8 @@
 export interface Tense {
   id: string;
   mood: string;
+  /** Heading the tense is listed under in the tense picker (e.g. "Tempi composti"). */
+  block: string;
   name: string;
   /** false for gerund / participle: one form, no pronoun. */
   personal: boolean;
@@ -15,7 +17,8 @@ export interface Tense {
 export interface Verb {
   inf: string;
   en: string;
-  irregular: boolean;
+  /** Id of one of the language's groups. */
+  group: string;
   /** forms[tenseId][person] = accepted answers (the first is the reference form); null = no such form. */
   forms: Record<string, (string[] | null)[]>;
 }
@@ -25,8 +28,15 @@ export interface LanguageData {
   name: string;
   native: string;
   pronouns: string[];
+  /** Verb groups, in display order (e.g. Regular, Irregular, Spelling change…). */
+  groups: VerbGroup[];
   tenses: Tense[];
   verbs: Verb[];
+}
+
+export interface VerbGroup {
+  id: string;
+  label: string;
 }
 
 export interface LanguageMeta {
@@ -69,8 +79,8 @@ export interface SessionRecord {
 
 export interface Settings {
   lang: string;
-  regular: boolean;
-  irregular: boolean;
+  /** Per language: selected verb group ids (missing = all groups). */
+  groups: Record<string, string[]>;
   /** Per language: infinitives the user unticked. */
   excluded: Record<string, string[]>;
   /** Per language: selected tense ids. */

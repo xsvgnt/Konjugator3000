@@ -1,19 +1,30 @@
 // Application state shared by every component.
 import type { Grade, Item, ItemStats, LanguageData, SessionRecord, Settings } from './types';
 import { LANGUAGES, loadLanguage } from './languages';
-import { buildPool, drawQuiz, selectedTenses, selectedVerbs, verbsInGroups } from './quiz';
+import { buildPool, drawQuiz, selectedGroups, selectedTenses, selectedVerbs, verbsInGroups } from './quiz';
 import { grade } from './grading';
 import { applyGrade } from './weights';
 import * as storage from './storage';
 
 const DEFAULT_SETTINGS: Settings = {
   lang: LANGUAGES[0]?.code ?? 'es',
-  regular: true,
-  irregular: true,
+  groups: {},
   excluded: {},
   tenses: {},
   count: 20
 };
+
+/** Saved settings may come from an older version (regular/irregular switches instead of groups). */
+function fromSaved(saved: Partial<Settings> & { regular?: boolean; irregular?: boolean }): Settings {
+  const { regular, irregular, ...rest } = saved;
+  const s: Settings = { ...structuredClone(DEFAULT_SETTINGS), ...rest };
+  if (!rest.groups && (regular === false || irregular === false)) {
+    // Keep the old choice for every language that only has those two groups.
+    const keep = [regular !== false && 'regular', irregular !== false && 'irregular'].filter(Boolean) as string[];
+    s.groups = { es: keep };
+  }
+  return s;
+}
 
 export type Screen = 'setup' | 'quiz' | 'results';
 export type View = 'practice' | 'progress';
@@ -44,7 +55,7 @@ class AppState {
   async init() {
     try {
       const saved = await storage.loadSettings();
-      if (saved) this.settings = { ...structuredClone(DEFAULT_SETTINGS), ...saved };
+      if (saved) this.settings = fromSaved(saved);
       if (!LANGUAGES.some((l) => l.code === this.settings.lang)) this.settings.lang = DEFAULT_SETTINGS.lang;
       this.sessions = await storage.loadSessions();
       await this.setLanguage(this.settings.lang);
@@ -61,15 +72,27 @@ class AppState {
   async setLanguage(code: string) {
     const data = await loadLanguage(code);
     this.settings.lang = code;
+    // Forget tenses and groups this language no longer has (the data may have changed).
+    const tenseIds = new Set(data.tenses.map((t) => t.id));
+    const kept = (this.settings.tenses[code] ?? []).filter((id) => tenseIds.has(id));
     // First visit to a language: start with its first tense selected.
-    if (!this.settings.tenses[code]?.length) this.settings.tenses[code] = data.tenses.slice(0, 1).map((t) => t.id);
+    this.settings.tenses[code] = kept.length ? kept : data.tenses.slice(0, 1).map((t) => t.id);
+    const groupIds = new Set(data.groups.map((g) => g.id));
+    const groups = this.settings.groups[code]?.filter((id) => groupIds.has(id));
+    if (groups) this.settings.groups[code] = groups;
     this.data = data;
     this.stats = await storage.loadStats(code);
     this.save();
   }
 
-  toggleGroup(group: 'regular' | 'irregular') {
-    this.settings[group] = !this.settings[group];
+  selectedGroups(): string[] {
+    return this.data ? selectedGroups(this.data, this.settings) : [];
+  }
+
+  toggleGroup(id: string) {
+    if (!this.data) return;
+    const cur = selectedGroups(this.data, this.settings);
+    this.settings.groups[this.settings.lang] = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
     this.save();
   }
 
@@ -77,6 +100,15 @@ class AppState {
     const lang = this.settings.lang;
     const cur = this.settings.tenses[lang] ?? [];
     this.settings.tenses[lang] = cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id];
+    this.save();
+  }
+
+  /** Selects (on=true) or clears every tense in `ids`, e.g. a whole block. */
+  setTenses(ids: string[], on: boolean) {
+    const lang = this.settings.lang;
+    const cur = new Set(this.settings.tenses[lang] ?? []);
+    for (const id of ids) (on ? cur.add(id) : cur.delete(id));
+    this.settings.tenses[lang] = [...cur];
     this.save();
   }
 
@@ -147,7 +179,7 @@ class AppState {
 
   async reloadAfterImport() {
     const saved = await storage.loadSettings();
-    if (saved) this.settings = { ...structuredClone(DEFAULT_SETTINGS), ...saved };
+    if (saved) this.settings = fromSaved(saved);
     this.sessions = await storage.loadSessions();
     await this.setLanguage(this.settings.lang);
   }

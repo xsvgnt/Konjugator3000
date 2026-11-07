@@ -1,4 +1,39 @@
-# Italian data review (7 November 2026)
+# Italian data review
+
+## Update: verb list and groups (7 November 2026, evening)
+
+The Italian verbs are now the 77 of `italian_list.xlsx`, in four groups taken from that list as is:
+Regular (2), Irregular (23), Spelling change (17), Irregular participle (35). The 66 verbs of
+`italian-verbs.xlsx` that are not in the list stay in the spreadsheet but are skipped.
+The regular/irregular flags discussed further down are superseded by these groups.
+
+**41 new verbs** were added to `italian-verbs.xlsx`, conjugated from Wiktionary (CC BY-SA) and
+checked again afterwards: assistere, assolvere, assumere, cadere, compiere, comunicare, concedere,
+concludere, crescere, designare, dirigere, discutere, distruggere, dolere, educare, emergere,
+espandere, esplodere, esprimere, fondere, giungere, invadere, inviare, muovere, nuocere, parere,
+persuadere, piangere, porgere, porre, rompere, sciogliere, sedere, servire, spingere, tenere,
+torcere, tradurre, trarre, valere, vincere.
+
+- **Auxiliary**: *essere* for cadere, crescere, emergere, esplodere, giungere, parere, sedere;
+  both accepted (first one shown) for servire (*ho servito / sono servito*), dolere
+  (*è doluto / ha doluto*), valere (*è valso / ha valso*); *avere* for all others.
+- **Variants** listed by Wiktionary are accepted (*muoviamo / moviamo*, *assistetti / assistei*).
+  Standard forms come first: *nuoccio* before *noccio*, *nuociuto* before *nociuto*; *espandere*
+  keeps only *espanso* (not the archaic *espanto*).
+- **Imperative**: *parere* has none, so it is never asked.
+
+**Participio presente** is a new tense (Forme nominali), filled from Wiktionary for all 77 verbs.
+*essere*, *dovere* and *sapere* have none, so it is never asked for them.
+
+**Tense picker** follows WordReference's layout: Indicativo (presente, imperfetto, passato remoto,
+futuro semplice) · Tempi composti (passato prossimo, trapassato prossimo, trapassato remoto, futuro
+anteriore) · Condizionale · Congiuntivo (presente, imperfetto, passato, trapassato) · Imperativo ·
+Forme nominali (participio presente, participio passato, gerundio). Clicking a block's heading
+selects or clears the whole block.
+
+**English translations** for the new verbs were added to `data/translations.en.json`.
+
+## First review (7 November 2026)
 
 All 102 verbs of `italian-verbs.xlsx` were checked, every tense and person, against the conjugation
 tables of [Wiktionary](https://en.wiktionary.org/) (CC BY-SA). Compound tenses were checked as

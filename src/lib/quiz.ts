@@ -7,9 +7,15 @@ export function itemKey(verb: Verb, tense: Tense, person: number): string {
   return `${verb.inf}|${tense.id}|${person}`;
 }
 
-/** Verbs matching the regular/irregular toggles, before the user's manual exclusions. */
+/** Selected group ids for this language (all groups until the user changes it). */
+export function selectedGroups(data: LanguageData, s: Settings): string[] {
+  return s.groups[data.code] ?? data.groups.map((g) => g.id);
+}
+
+/** Verbs in the selected groups, before the user's manual exclusions. */
 export function verbsInGroups(data: LanguageData, s: Settings): Verb[] {
-  return data.verbs.filter((v) => (v.irregular ? s.irregular : s.regular));
+  const groups = new Set(selectedGroups(data, s));
+  return data.verbs.filter((v) => groups.has(v.group));
 }
 
 export function selectedVerbs(data: LanguageData, s: Settings): Verb[] {
@@ -53,13 +59,14 @@ export function promptLabel(item: Item): string {
   return [item.tense.promptPrefix, item.pronoun].filter(Boolean).join(' ');
 }
 
-/** Groups tenses by mood, keeping the data order. */
-export function tensesByMood(tenses: Tense[]): { mood: string; tenses: Tense[] }[] {
-  const groups: { mood: string; tenses: Tense[] }[] = [];
+/** Groups tenses into the picker's blocks ("Indicativo", "Tempi composti"…), keeping the data order. */
+export function tensesByBlock(tenses: Tense[]): { block: string; tenses: Tense[] }[] {
+  const blocks: { block: string; tenses: Tense[] }[] = [];
   for (const t of tenses) {
-    const g = groups.find((x) => x.mood === t.mood);
-    if (g) g.tenses.push(t);
-    else groups.push({ mood: t.mood, tenses: [t] });
+    const name = t.block ?? t.mood;
+    const b = blocks.find((x) => x.block === name);
+    if (b) b.tenses.push(t);
+    else blocks.push({ block: name, tenses: [t] });
   }
-  return groups;
+  return blocks;
 }

@@ -3,6 +3,7 @@
   import { normalize, stripAccents } from '../grading';
 
   let query = $state('');
+  const groupLabel = $derived(new Map((app.data?.groups ?? []).map((g) => [g.id, g.label])));
 
   const shown = $derived.by(() => {
     const q = stripAccents(query);
@@ -39,7 +40,7 @@
               <input type="checkbox" checked={!app.isExcluded(v.inf)} onchange={() => app.toggleVerb(v.inf)} />
               <span class="mono inf">{v.inf}</span>
               <span class="en">{v.en}</span>
-              <span class="badge">{v.irregular ? 'Irregular' : 'Regular'}</span>
+              <span class="badge">{groupLabel.get(v.group) ?? v.group}</span>
             </label>
           </li>
         {:else}
@@ -87,7 +88,7 @@
   }
   .row {
     display: grid;
-    grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.4fr) 100px;
+    grid-template-columns: 48px minmax(0, 1fr) minmax(0, 1.4fr) 150px;
     gap: 12px;
     align-items: center;
     padding: 9px 16px;
@@ -122,6 +123,7 @@
     color: var(--subtle);
   }
   .badge {
+    white-space: nowrap;
     justify-self: start;
     font-size: 12px;
     padding: 1px 8px;

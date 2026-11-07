@@ -1,17 +1,24 @@
 <script lang="ts">
   import { app } from '../app.svelte';
   import { LANGUAGES } from '../languages';
-  import { QUESTION_COUNTS, tensesByMood } from '../quiz';
+  import { QUESTION_COUNTS, tensesByBlock } from '../quiz';
   import Icon from './Icon.svelte';
 
-  const groups = $derived(app.data ? tensesByMood(app.data.tenses) : []);
+  const blocks = $derived(app.data ? tensesByBlock(app.data.tenses) : []);
   const selectedIds = $derived(new Set(app.settings.tenses[app.settings.lang] ?? []));
-  const regularCount = $derived(app.data?.verbs.filter((v) => !v.irregular).length ?? 0);
-  const irregularCount = $derived(app.data?.verbs.filter((v) => v.irregular).length ?? 0);
+  const selectedGroups = $derived(new Set(app.selectedGroups()));
+  const groups = $derived(
+    (app.data?.groups ?? []).map((g) => ({ ...g, n: app.data!.verbs.filter((v) => v.group === g.id).length }))
+  );
   const questionCount = $derived(Math.min(app.settings.count, app.pool.length));
 
+  /** Clicking a block heading selects the whole block, or clears it when it is already complete. */
+  function toggleBlock(ids: string[]) {
+    app.setTenses(ids, !ids.every((id) => selectedIds.has(id)));
+  }
+
   const startHint = $derived.by(() => {
-    if (!app.settings.regular && !app.settings.irregular) return 'Select at least one verb group.';
+    if (selectedGroups.size === 0) return 'Select at least one verb group.';
     if (app.verbs.length === 0) return 'Tick at least one verb in the list.';
     if (app.tenses.length === 0) return 'Select at least one tense.';
     if (app.pool.length < app.settings.count)
@@ -35,9 +42,9 @@
   <section>
     <h2 class="label">Verb groups</h2>
     <div class="stack">
-      {#each [{ key: 'regular', label: 'Regular', n: regularCount }, { key: 'irregular', label: 'Irregular', n: irregularCount }] as g (g.key)}
-        {@const on = app.settings[g.key as 'regular' | 'irregular']}
-        <button type="button" class="group" aria-pressed={on} onclick={() => app.toggleGroup(g.key as 'regular' | 'irregular')}>
+      {#each groups as g (g.id)}
+        {@const on = selectedGroups.has(g.id)}
+        <button type="button" class="group" aria-pressed={on} onclick={() => app.toggleGroup(g.id)}>
           <span class="box" class:on>{#if on}<Icon name="check" size={12} />{/if}</span>
           <span class="grow">{g.label}</span>
           <span class="mono count">{g.n}</span>
@@ -48,13 +55,25 @@
   </section>
 
   <section>
-    <h2 class="label">Tenses · {app.tenses.length} selected</h2>
+    <div class="section-head">
+      <h2 class="label">Tenses · {app.tenses.length} selected</h2>
+      <div class="head-actions">
+        <button type="button" class="link" onclick={() => app.setTenses(app.data?.tenses.map((t) => t.id) ?? [], true)}>All</button>
+        <button type="button" class="link" onclick={() => app.setTenses(app.data?.tenses.map((t) => t.id) ?? [], false)}>Clear</button>
+      </div>
+    </div>
     <div class="moods">
-      {#each groups as g (g.mood)}
+      {#each blocks as b (b.block)}
+        {@const ids = b.tenses.map((t) => t.id)}
+        {@const all = ids.every((id) => selectedIds.has(id))}
         <div>
-          <h3 class="mood">{g.mood}</h3>
+          <h3 class="mood">
+            <button type="button" class="block-toggle" onclick={() => toggleBlock(ids)} title={all ? `Clear ${b.block}` : `Select all of ${b.block}`}>
+              {b.block}<span class="block-action">{all ? 'clear' : 'all'}</span>
+            </button>
+          </h3>
           <div class="chips">
-            {#each g.tenses as t (t.id)}
+            {#each b.tenses as t (t.id)}
               <button type="button" class="chip" aria-pressed={selectedIds.has(t.id)} onclick={() => app.toggleTense(t.id)}>
                 {t.name}
               </button>
@@ -88,8 +107,30 @@
     flex-direction: column;
     gap: 28px;
   }
-  section > h2 {
+  section > h2,
+  .section-head {
     margin-bottom: 10px;
+  }
+  .section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .head-actions {
+    display: flex;
+    gap: 12px;
+  }
+  .link {
+    padding: 2px 0;
+    border: none;
+    background: none;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .link:hover {
+    text-decoration: underline;
   }
   .stack {
     display: flex;
@@ -146,6 +187,27 @@
     font-size: 13px;
     font-weight: 500;
     color: var(--subtle);
+  }
+  .block-toggle {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 2px 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: inherit;
+  }
+  .block-action {
+    font-size: 12px;
+    color: var(--muted);
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .block-toggle:hover .block-action,
+  .block-toggle:focus-visible .block-action {
+    opacity: 1;
+    color: var(--accent);
   }
   .chips {
     display: flex;

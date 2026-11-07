@@ -2,9 +2,12 @@
   import { app } from '../app.svelte';
 
   const tenseList = $derived(app.tenses.map((t) => `${t.mood} ${t.name.toLowerCase()}`).join(', '));
-  const groups = $derived(
-    app.settings.regular && app.settings.irregular ? 'regular and irregular' : app.settings.regular ? 'regular' : 'irregular'
-  );
+  const groups = $derived.by(() => {
+    const all = app.data?.groups ?? [];
+    const on = new Set(app.selectedGroups());
+    if (on.size === all.length) return 'all groups';
+    return all.filter((g) => on.has(g.id)).map((g) => g.label.toLowerCase()).join(', ');
+  });
 
   function leave() {
     if (app.screen === 'quiz' && app.filled > 0 && !confirm('Leave this quiz? Your answers will be lost.')) return;
