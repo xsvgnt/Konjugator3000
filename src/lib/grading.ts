@@ -1,13 +1,18 @@
 import type { Grade } from './types';
 
-/** Lower-case, trim, collapse spaces, unify apostrophes. Case and extra spaces never matter. */
+/**
+ * Lower-case, trim, collapse spaces, unify apostrophes. Case and extra spaces never matter.
+ * A word-final apostrophe is optional: Italian truncated imperatives are written both ways
+ * (di'/di, va'/va, fa'/fa).
+ */
 export function normalize(s: string): string {
   return s
     .normalize('NFC')
     .replace(/[’‘`´]/g, "'")
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, ' ');
+    .replace(/\s+/g, ' ')
+    .replace(/'(?= |$)/g, '');
 }
 
 /** normalize() and drop every diacritic (ò→o, é→e, ñ→n, ü→u). */

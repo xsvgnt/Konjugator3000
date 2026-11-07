@@ -158,7 +158,9 @@ async function convert(lang) {
           }
           if (tense.answerPrefix && words[0] === tense.answerPrefix) words = words.slice(1);
           const cell = words.map((w) => lang.shorthandFixes?.[w] ?? w).join(' ');
-          let answers = expandCell(cell, inf);
+          // " / " with spaces separates whole alternatives ("è piovuto / ha piovuto");
+          // "/" inside a word is the ending shorthand ("perso/duto").
+          let answers = [...new Set(cell.split(' / ').flatMap((alt) => expandCell(alt.trim(), inf)))];
           if (answers.length > 1 || /[/()]/.test(cell)) issues.variants.push(`| ${tense.mood} ${tense.name} | ${inf} | ${cell} | ${answers.join(' · ')} |`);
           if (tense.compound) {
             answers = answers.flatMap((a) => {
@@ -179,7 +181,11 @@ async function convert(lang) {
   }
 
   // Every verb should have every tense.
+  const defective = [];
   for (const v of verbs.values()) {
+    // Imperatives never have a first person singular, so they don't count.
+    const gaps = tenses.filter((t) => t.personal && t.mood !== 'Imperativo' && (v.forms[t.id] ?? []).some((f) => !f)).length;
+    if (gaps) defective.push(`${v.inf}: some persons left out (“-”) in ${gaps} tense${gaps > 1 ? 's' : ''}, never asked`);
     for (const t of tenses) if (!v.forms[t.id]) issues.missing.push(`${v.inf}: no row in “${t.mood} ${t.name}”`);
     if (!v.en) issues.missing.push(`${v.inf}: no English translation in data/translations.en.json`);
   }
@@ -206,6 +212,7 @@ async function convert(lang) {
   list('Unexpected characters (removed)', issues.stray);
   list('Cells without a leading pronoun', issues.noPronoun);
   list('Missing data', issues.missing);
+  list('Defective verbs', defective);
   list('Skipped rows', issues.skipped);
   list('Sheets not in the converter config', issues.unknownSheets);
   report.add('', `### Shorthand expansions (${issues.variants.length})`, '', 'Check the right-hand column: these are all accepted as correct.', '');

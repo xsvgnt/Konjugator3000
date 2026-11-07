@@ -29,8 +29,10 @@ describe('grade', () => {
     expect(grade('no hables', ['hables'], 'no')).toBe('correct');
     expect(grade('hables', ['hables'], 'no')).toBe('correct');
   });
-  it('unifies apostrophes', () => {
+  it('unifies apostrophes and makes a final one optional', () => {
     expect(grade('va’', ["va'"])).toBe('correct');
+    expect(grade('di', ["di'"])).toBe('correct');
+    expect(grade("fa'", ['fai', "fa'"])).toBe('correct');
   });
 });
 

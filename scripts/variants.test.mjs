@@ -17,7 +17,17 @@ describe('shorthand expansion', () => {
     ["sta'/ai", 'stare', ["sta'", 'stai']],
     ['c(u)ociamo', 'cuocere', ['cociamo', 'cuociamo']],
     ['aprii/apersi', 'aprire', ['aprii', 'apersi']],
-    ['hablo', 'hablar', ['hablo']]
+    ['hablo', 'hablar', ['hablo']],
+    ['faccio/fo', 'fare', ['faccio', 'fo']],
+    ['debba/deva', 'dovere', ['debba', 'deva']],
+    ['devo/ebbo', 'dovere', ['devo', 'debbo']],
+    ['diedi/etti', 'dare', ['diedi', 'detti']],
+    ['ripetei/etti', 'ripetere', ['ripetei', 'ripetetti']],
+    ['ripeté/ette', 'ripetere', ['ripeté', 'ripetette']],
+    ['ripeterono/ettero', 'ripetere', ['ripeterono', 'ripetettero']],
+    ['spegniamo/spegnamo', 'spegnere', ['spegniamo', 'spegnamo']],
+    ['persi/perdei/perdetti', 'perdere', ['persi', 'perdei', 'perdetti']],
+    ['perse/perdé/perdette', 'perdere', ['perse', 'perdé', 'perdette']]
   ])('%s (%s)', (cell, inf, expected) => {
     expect(expandCell(cell, inf)).toEqual(expected);
   });
