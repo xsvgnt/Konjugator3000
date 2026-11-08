@@ -27,7 +27,7 @@ function fromSaved(saved: Partial<Settings> & { regular?: boolean; irregular?: b
 }
 
 export type Screen = 'setup' | 'quiz' | 'results';
-export type View = 'practice' | 'progress';
+export type View = 'practice' | 'progress' | 'endings';
 
 class AppState {
   ready = $state(false);

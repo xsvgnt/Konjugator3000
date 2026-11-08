@@ -7,6 +7,7 @@
   import QuizGrid from './lib/components/QuizGrid.svelte';
   import Results from './lib/components/Results.svelte';
   import Progress from './lib/components/Progress.svelte';
+  import Endings from './lib/components/Endings.svelte';
   import Icon from './lib/components/Icon.svelte';
 
   app.init();
@@ -24,6 +25,9 @@
     </button>
     <button type="button" aria-current={app.view === 'progress' ? 'page' : undefined} onclick={() => (app.view = 'progress')}>
       Progress
+    </button>
+    <button type="button" aria-current={app.view === 'endings' ? 'page' : undefined} onclick={() => (app.view = 'endings')}>
+      Endings
     </button>
   </nav>
   <div class="top-right">
@@ -43,6 +47,8 @@
   <p class="loading">Could not load the app: {app.error}</p>
 {:else if app.view === 'progress'}
   <Progress />
+{:else if app.view === 'endings'}
+  <Endings />
 {:else}
   <div class="layout">
     <aside class="side">

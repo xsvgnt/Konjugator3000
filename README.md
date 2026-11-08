@@ -23,6 +23,7 @@ npm run convert
 This regenerates `src/lib/data/*.json` and writes **`data/conversion-report.md`**, which lists anything suspicious (flag mismatches, stray characters, skipped rows) and every shorthand expansion (`perso/duto` → *perso · perduto*, `c(u)ociamo` → *cociamo · cuociamo*). Check it after editing a spreadsheet.
 
 - English translations live in `data/translations.en.json`.
+- The **Endings** page (regular endings on model verbs, with short notes) is written by hand in `src/lib/endings.ts`. `npm test` checks every form it shows against the verb data, so a new tense needs an entry there.
 - Shorthand the automatic expansion gets wrong can be rewritten in `shorthandFixes` in `scripts/convert.mjs`.
 - To add a language, add an entry to `LANGUAGES` in `scripts/convert.mjs` (file, pronouns, and how each sheet maps to a mood and tense).
 
