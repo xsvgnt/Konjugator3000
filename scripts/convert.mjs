@@ -35,8 +35,14 @@ const LANGUAGES = [
       'Indicativo Imperfecto': { id: 'ind-imperfecto', mood: 'Indicativo', name: 'Imperfecto' },
       'Indicativo Futuro': { id: 'ind-futuro', mood: 'Indicativo', name: 'Futuro' },
       'Indicativo Condicional': { id: 'ind-condicional', mood: 'Indicativo', name: 'Condicional' },
+      'Indicativo Pretérito Perfecto': { id: 'ind-perfecto', mood: 'Indicativo', block: 'Tiempos compuestos', name: 'Pretérito perfecto' },
+      'Indicativo Pluscuamperfecto': { id: 'ind-pluscuamperfecto', mood: 'Indicativo', block: 'Tiempos compuestos', name: 'Pluscuamperfecto' },
+      'Indicativo Futuro Perfecto': { id: 'ind-futuro-perfecto', mood: 'Indicativo', block: 'Tiempos compuestos', name: 'Futuro perfecto' },
+      'Indicativo Condicional Perfecto': { id: 'ind-condicional-perfecto', mood: 'Indicativo', block: 'Tiempos compuestos', name: 'Condicional perfecto' },
       'Subjuntivo Presente': { id: 'sub-presente', mood: 'Subjuntivo', name: 'Presente' },
       'Subjuntivo Imperfecto': { id: 'sub-imperfecto', mood: 'Subjuntivo', name: 'Imperfecto', seVariant: true },
+      'Subjuntivo Pretérito Perfecto': { id: 'sub-perfecto', mood: 'Subjuntivo', name: 'Pretérito perfecto' },
+      'Subjuntivo Pluscuamperfecto': { id: 'sub-pluscuamperfecto', mood: 'Subjuntivo', name: 'Pluscuamperfecto', seVariant: true },
       'Imperativo': { id: 'imp-afirmativo', mood: 'Imperativo', name: 'Afirmativo' },
       'Imperativo Negativo': { id: 'imp-negativo', mood: 'Imperativo', name: 'Negativo', answerPrefix: 'no' },
       'Infinitivos': {
@@ -214,7 +220,12 @@ async function convert(lang) {
             });
           }
           if (tense.seVariant) {
-            answers = answers.flatMap((a) => { const s = seForm(a); return s ? [a, s] : [a]; });
+            // On the first word, so "hubiera hablado" also gets "hubiese hablado".
+            answers = answers.flatMap((a) => {
+              const [first, ...rest] = a.split(' ');
+              const s = seForm(first);
+              return s ? [a, [s, ...rest].join(' ')] : [a];
+            });
           }
           return [...new Set(answers)];
         });

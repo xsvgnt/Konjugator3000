@@ -33,6 +33,19 @@ function aux(head: string, verb: string, participle: [string, string], forms: st
 const IT_AVERE = (forms: string) => aux('avere', 'amare', ['amato', 'amato'], forms);
 const IT_ESSERE = (forms: string) => aux('essere', 'cadere', ['caduto', 'caduti'], forms);
 
+/** Spanish compound tense: the given forms of haber ("|" = alternatives) + the participle (-er and -ir share -ido). */
+function ES_HABER(forms: string): EndingsColumn[] {
+  const models: [string, string, string, string][] = [
+    ['-ar', 'hablar', 'habl', 'ado'],
+    ['-er / -ir', 'comer', 'com', 'ido']
+  ];
+  return models.map(([head, verb, stem, end]) => ({
+    head,
+    verb,
+    cells: forms.split(' ').map((f) => f.split('|').map((h) => `[${h}] ${stem}[${end}]`).join(' / '))
+  }));
+}
+
 export const ENDINGS: Record<string, Record<string, TenseEndings>> = {
   it: {
     'ind-presente': {
@@ -181,6 +194,22 @@ export const ENDINGS: Record<string, Record<string, TenseEndings>> = {
       ],
       note: 'The whole infinitive + the -er/-ir imperfecto endings. Same stem as the futuro.'
     },
+    'ind-perfecto': {
+      columns: ES_HABER('he has ha hemos habéis han'),
+      note: 'Presente of haber + participio (-ar → -ado, -er and -ir → -ido: vivido). The participle never changes: ella ha hablado, ellas han hablado.'
+    },
+    'ind-pluscuamperfecto': {
+      columns: ES_HABER('había habías había habíamos habíais habían'),
+      note: 'Imperfecto of haber + participio.'
+    },
+    'ind-futuro-perfecto': {
+      columns: ES_HABER('habré habrás habrá habremos habréis habrán'),
+      note: 'Futuro of haber + participio.'
+    },
+    'ind-condicional-perfecto': {
+      columns: ES_HABER('habría habrías habría habríamos habríais habrían'),
+      note: 'Condicional of haber + participio.'
+    },
     'sub-presente': {
       columns: [
         col('-ar', 'hablar', 'habl', 'e es e emos éis en'),
@@ -196,6 +225,14 @@ export const ENDINGS: Record<string, Record<string, TenseEndings>> = {
         col('-ir', 'vivir', 'viv', 'iera|iese ieras|ieses iera|iese iéramos|iésemos ierais|ieseis ieran|iesen')
       ],
       note: 'Built on the ellos form of the pretérito (hablaron → habla-). The -ra and -se forms are both correct.'
+    },
+    'sub-perfecto': {
+      columns: ES_HABER('haya hayas haya hayamos hayáis hayan'),
+      note: 'Subjuntivo presente of haber + participio.'
+    },
+    'sub-pluscuamperfecto': {
+      columns: ES_HABER('hubiera|hubiese hubieras|hubieses hubiera|hubiese hubiéramos|hubiésemos hubierais|hubieseis hubieran|hubiesen'),
+      note: 'Subjuntivo imperfecto of haber + participio. The -ra and -se forms are both correct.'
     },
     'imp-afirmativo': {
       columns: [

@@ -29,7 +29,9 @@ This regenerates `src/lib/data/*.json` and writes **`data/conversion-report.md`*
 
 The converter also adds accepted variants automatically:
 - Italian compound tenses with *essere* accept both genders (*sono andato / andata*).
-- Spanish *subjuntivo imperfecto* accepts the *-se* form (*hablara / hablase*).
+- Spanish *subjuntivo imperfecto* and *pluscuamperfecto* accept the *-se* form (*hablara / hablase*, *hubiera hablado / hubiese hablado*).
+
+The Spanish conjugations follow [WordReference](https://www.wordreference.com/conj/esverbs.aspx?v=hablar) (checked for all 40 verbs and 17 tenses on 2026-11-12, leaving out the *vos* forms).
 
 ## Typing accents
 
