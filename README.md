@@ -31,6 +31,10 @@ The converter also adds accepted variants automatically:
 - Italian compound tenses with *essere* accept both genders (*sono andato / andata*).
 - Spanish *subjuntivo imperfecto* accepts the *-se* form (*hablara / hablase*).
 
+## Typing accents
+
+No accent keys? In a quiz field, press **↑** after a letter to cycle through its accented forms (*e → è → é* in Italian, *u → ú → ü* in Spanish) and **↓** to go back. The forms per language are in `src/lib/accents.ts`.
+
 ## Grading and weights
 
 - **Correct**: matches an accepted answer (case and extra spaces are ignored).

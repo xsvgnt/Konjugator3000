@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../app.svelte';
+  import ConfirmBox from './ConfirmBox.svelte';
 
   const tenseList = $derived(app.tenses.map((t) => `${t.mood} ${t.name.toLowerCase()}`).join(', '));
   const groups = $derived.by(() => {
@@ -9,8 +10,14 @@
     return all.filter((g) => on.has(g.id)).map((g) => g.label.toLowerCase()).join(', ');
   });
 
+  let confirming = $state(false);
+
   function leave() {
-    if (app.screen === 'quiz' && app.filled > 0 && !confirm('Leave this quiz? Your answers will be lost.')) return;
+    if (app.screen === 'quiz' && app.filled > 0 && !confirming) {
+      confirming = true;
+      return;
+    }
+    confirming = false;
     app.backToSetup();
   }
 </script>
@@ -27,9 +34,19 @@
     <dt>Length</dt>
     <dd>{app.quiz.length} questions</dd>
   </dl>
-  <button type="button" class="btn" onclick={leave}>
-    {app.screen === 'quiz' ? 'Leave quiz' : 'Change settings'}
-  </button>
+  {#if confirming}
+    <ConfirmBox
+      message="Leave this quiz? Your {app.filled} {app.filled === 1 ? 'answer' : 'answers'} will be lost."
+      confirmLabel="Leave quiz"
+      cancelLabel="Keep going"
+      onconfirm={leave}
+      oncancel={() => (confirming = false)}
+    />
+  {:else}
+    <button type="button" class="btn" onclick={leave}>
+      {app.screen === 'quiz' ? 'Leave quiz' : 'Change settings'}
+    </button>
+  {/if}
 </div>
 
 <style>

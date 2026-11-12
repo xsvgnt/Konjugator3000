@@ -2,6 +2,7 @@
   import { tick } from 'svelte';
   import { app } from '../app.svelte';
   import { promptLabel } from '../quiz';
+  import { cycleAccent } from '../accents';
 
   let inputs: HTMLInputElement[] = $state([]);
 
@@ -21,6 +22,18 @@
   }
 
   function onKey(e: KeyboardEvent, i: number) {
+    if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey) {
+      const input = e.currentTarget as HTMLInputElement;
+      const pos = input.selectionStart ?? 0;
+      if (pos !== input.selectionEnd) return;
+      const next = cycleAccent(input.value, pos, app.settings.lang, e.key === 'ArrowUp' ? 1 : -1);
+      if (next === null) return;
+      e.preventDefault();
+      app.answers[i] = next;
+      input.value = next; // update now so the cursor can be put back right away
+      input.setSelectionRange(pos, pos);
+      return;
+    }
     if (e.key !== 'Enter') return;
     e.preventDefault();
     if (e.ctrlKey || e.metaKey) tryValidate();

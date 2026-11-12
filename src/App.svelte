@@ -32,6 +32,7 @@
   </nav>
   <div class="top-right">
     {#if app.view === 'practice' && app.screen === 'quiz'}
+      <span class="keys" title="Press ↑ after a letter to cycle its accents (e → è → é), ↓ to go back"><kbd>↑</kbd><kbd>↓</kbd> accent</span>
       <span class="keys"><kbd>Enter</kbd> next field</span>
       <span class="keys"><kbd>Ctrl</kbd><kbd>Enter</kbd> validate</span>
     {/if}

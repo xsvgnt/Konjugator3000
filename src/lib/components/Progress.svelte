@@ -2,6 +2,7 @@
   import { app } from '../app.svelte';
   import { LANGUAGES } from '../languages';
   import { exportBackup, importBackup } from '../storage';
+  import ConfirmBox from './ConfirmBox.svelte';
 
   let message = $state('');
   let fileInput: HTMLInputElement;
@@ -51,28 +52,41 @@
     message = 'Backup downloaded.';
   }
 
-  async function doImport(e: Event) {
+  /** The destructive action waiting for confirmation, shown in a ConfirmBox below the buttons. */
+  type Pending =
+    | { kind: 'import'; file: File }
+    | { kind: 'reset'; lang: string; name: string };
+  let pending = $state.raw<Pending | null>(null);
+
+  function pickImport(e: Event) {
     const file = (e.currentTarget as HTMLInputElement).files?.[0];
+    fileInput.value = ''; // so picking the same file again still fires onchange
     if (!file) return;
-    if (!confirm('Replace your current progress with this backup?')) {
-      fileInput.value = '';
-      return;
-    }
-    try {
-      await importBackup(await file.text());
-      await app.reloadAfterImport();
-      message = 'Backup restored.';
-    } catch (err) {
-      message = err instanceof Error ? err.message : 'Could not read this file.';
-    }
-    fileInput.value = '';
+    message = '';
+    pending = { kind: 'import', file };
   }
 
-  async function doReset() {
-    const name = app.data?.name ?? lang;
-    if (!confirm(`Erase all ${name} progress (weights and session history)? This cannot be undone.`)) return;
-    await app.resetProgress(lang);
-    message = `${name} progress erased.`;
+  function askReset() {
+    message = '';
+    pending = { kind: 'reset', lang, name: app.data?.name ?? lang };
+  }
+
+  async function confirmPending() {
+    const p = pending;
+    pending = null;
+    if (!p) return;
+    if (p.kind === 'import') {
+      try {
+        await importBackup(await p.file.text());
+        await app.reloadAfterImport();
+        message = 'Backup restored.';
+      } catch (err) {
+        message = err instanceof Error ? err.message : 'Could not read this file.';
+      }
+    } else {
+      await app.resetProgress(p.lang);
+      message = `${p.name} progress erased.`;
+    }
   }
 </script>
 
@@ -147,9 +161,28 @@
     <div class="row">
       <button type="button" class="btn" onclick={doExport}>Export backup</button>
       <button type="button" class="btn" onclick={() => fileInput.click()}>Import backup…</button>
-      <input bind:this={fileInput} type="file" accept="application/json,.json" class="sr-only" tabindex="-1" onchange={doImport} />
-      <button type="button" class="btn btn-danger" onclick={doReset}>Reset {app.data?.name} progress</button>
+      <input bind:this={fileInput} type="file" accept="application/json,.json" class="sr-only" tabindex="-1" onchange={pickImport} />
+      <button type="button" class="btn btn-danger" onclick={askReset}>Reset {app.data?.name} progress</button>
     </div>
+    {#if pending}
+      <div class="ask">
+        {#if pending.kind === 'import'}
+          <ConfirmBox
+            message="Replace your current progress and settings with the backup “{pending.file.name}”?"
+            confirmLabel="Replace progress"
+            onconfirm={confirmPending}
+            oncancel={() => (pending = null)}
+          />
+        {:else}
+          <ConfirmBox
+            message="Erase all {pending.name} progress (weights and quiz history)? This can't be undone unless you import the corresponding backup."
+            confirmLabel="Erase progress"
+            onconfirm={confirmPending}
+            oncancel={() => (pending = null)}
+          />
+        {/if}
+      </div>
+    {/if}
     {#if message}<p class="msg" aria-live="polite">{message}</p>{/if}
   </section>
 </div>
@@ -258,6 +291,9 @@
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
+    margin-top: 12px;
+  }
+  .ask {
     margin-top: 12px;
   }
   .msg {
