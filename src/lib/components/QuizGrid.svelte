@@ -3,6 +3,8 @@
   import { app } from '../app.svelte';
   import { promptLabel } from '../quiz';
   import { cycleAccent } from '../accents';
+  import { moodClass } from '../tenseStyle';
+  import TenseShape from './TenseShape.svelte';
 
   let inputs: HTMLInputElement[] = $state([]);
 
@@ -60,10 +62,10 @@
   <ol class="grid">
     {#each app.quiz as item, i (item.key)}
       {@const blank = app.showBlanks && !app.answers[i].trim()}
-      <li class="card" class:blank>
+      <li class="card {moodClass(item.tense.mood)}" class:blank>
         <div class="meta mono">
           <span>#{String(i + 1).padStart(2, '0')}</span>
-          <span>{item.tense.mood} · {item.tense.name}</span>
+          <span class="tense"><span class="mood-text">{item.tense.mood}</span> · <TenseShape id={item.tense.id} /> {item.tense.name}</span>
         </div>
         <label for="q{i}" class="prompt">
           {#if promptLabel(item)}<span class="pron">{promptLabel(item)}</span>{/if}
@@ -148,6 +150,8 @@
     border-radius: var(--radius);
     border: 1px solid var(--line);
     background: var(--card);
+    border-color: color-mix(in srgb, var(--mood, var(--line)) 30%, var(--line));
+    background: color-mix(in srgb, var(--mood, transparent) 7%, var(--card));
   }
   .card.blank {
     border-color: var(--bad-bd);
@@ -161,6 +165,12 @@
     gap: 8px;
     font-size: 12px;
     color: var(--muted);
+  }
+  .tense {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--subtle);
   }
   .prompt {
     font-size: 18px;

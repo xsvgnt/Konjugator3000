@@ -29,6 +29,13 @@
   --bad-bd: #fecaca;
   --bad-bar: #ef4444;
 
+  /* Mood colors (tenseStyle.ts): text, and tints mixed into cards */
+  --mood-ind: #185fa5;
+  --mood-sub: #6a3fb5;
+  --mood-cond: #0f6e56;
+  --mood-imp: #a3401c;
+  --mood-nf: #5f5e5a;
+
   --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
   --radius: 12px;
@@ -64,6 +71,12 @@
   --bad-bg: #2e1416;
   --bad-bd: #6b2a2e;
   --bad-bar: #f87171;
+
+  --mood-ind: #85b7eb;
+  --mood-sub: #c0a8f0;
+  --mood-cond: #5dcaa5;
+  --mood-imp: #f0997b;
+  --mood-nf: #b4b2a9;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -96,6 +109,12 @@
     --bad-bg: #2e1416;
     --bad-bd: #6b2a2e;
     --bad-bar: #f87171;
+
+    --mood-ind: #85b7eb;
+    --mood-sub: #c0a8f0;
+    --mood-cond: #5dcaa5;
+    --mood-imp: #f0997b;
+    --mood-nf: #b4b2a9;
   }
 }
 
@@ -218,6 +237,17 @@ kbd {
   border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent-ink);
+}
+
+/* Mood color: set by moodClass() in tenseStyle.ts, read as var(--mood) */
+.mood-ind { --mood: var(--mood-ind); }
+.mood-sub { --mood: var(--mood-sub); }
+.mood-cond { --mood: var(--mood-cond); }
+.mood-imp { --mood: var(--mood-imp); }
+.mood-nf { --mood: var(--mood-nf); }
+.mood-text {
+  color: var(--mood, inherit);
+  font-weight: 500;
 }
 
 /* Segmented control */

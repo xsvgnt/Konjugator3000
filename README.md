@@ -37,6 +37,16 @@ The Spanish conjugations follow [WordReference](https://www.wordreference.com/co
 
 No accent keys? In a quiz field, press **↑** after a letter to cycle through its accented forms (*e → è → é* in Italian, *u → ú → ü* in Spanish) and **↓** to go back. The forms per language are in `src/lib/accents.ts`.
 
+## Telling tenses apart
+
+Quiz cards, the tense picker and the Endings page show each tense's mood as a color and its time as a shape:
+
+- **Color = mood**: Indicativo blue, Subjuntivo / Congiuntivo violet, Condizionale teal, Imperativo coral, non-personal forms grey.
+- **Shape = time**: ● presente, ■ imperfecto, ▲ pretérito / passato remoto, ◆ futuro, ⬟ condicional, – gerundio and participio.
+- **Hollow shape = compound tense**: it takes the shape of the auxiliary's tense (*he hablado* ○, *había hablado* □, *avrò amato* ◇).
+
+The mapping is in `src/lib/tenseStyle.ts` (a new tense needs a shape there; `npm test` checks this) and the colors are the `--mood-*` tokens in `src/app.css`.
+
 ## Grading and weights
 
 - **Correct**: matches an accepted answer (case and extra spaces are ignored).

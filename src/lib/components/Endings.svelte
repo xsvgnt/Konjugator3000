@@ -3,6 +3,8 @@
   import { LANGUAGES, loadLanguage } from '../languages';
   import { tensesByBlock } from '../quiz';
   import { ENDINGS, parseCell } from '../endings';
+  import { moodClass } from '../tenseStyle';
+  import TenseShape from './TenseShape.svelte';
   import type { LanguageData } from '../types';
 
   // Opens on the language picked in Practice; switching here doesn't change it.
@@ -59,15 +61,15 @@
     {#if data}
       {#each blocks as b (b.block)}
         <section class="block" id={blockId(b.block)}>
-          <h2 class="block-title">{b.block}</h2>
+          <h2 class="block-title {moodClass(b.tenses[0].mood)}">{b.block}</h2>
           <div class="cards">
             {#each b.tenses as t (t.id)}
               {@const e = endings[t.id]}
               {@const persons = t.personal
                 ? data.pronouns.map((_, i) => i).filter((i) => e.columns.some((c) => c.cells[i] !== null))
                 : [0]}
-              <article class="card">
-                <h3>{t.name}{#if t.block !== t.mood}<span class="mood">{` · ${t.mood}`}</span>{/if}</h3>
+              <article class="card {moodClass(t.mood)}">
+                <h3><TenseShape id={t.id} /> {t.name}{#if t.block !== t.mood}<span class="mood">{` · ${t.mood}`}</span>{/if}</h3>
                 <table>
                   <thead>
                     <tr>
@@ -182,7 +184,7 @@
     margin-bottom: 12px;
     font-size: 13px;
     font-weight: 600;
-    color: var(--muted);
+    color: var(--mood, var(--muted));
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
@@ -196,6 +198,8 @@
     border: 1px solid var(--divider);
     border-radius: var(--radius);
     background: var(--card);
+    border-color: color-mix(in srgb, var(--mood, var(--divider)) 28%, var(--divider));
+    background: color-mix(in srgb, var(--mood, transparent) 6%, var(--card));
     overflow-x: auto;
   }
   h3 {

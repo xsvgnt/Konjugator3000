@@ -3,6 +3,8 @@
   import { promptLabel } from '../quiz';
   import type { Grade } from '../types';
   import Icon from './Icon.svelte';
+  import { moodClass } from '../tenseStyle';
+  import TenseShape from './TenseShape.svelte';
 
   const LABEL: Record<Grade, string> = { correct: 'Correct', passable: 'Passable', wrong: 'Wrong' };
   const ICON: Record<Grade, 'check' | 'wave' | 'x'> = { correct: 'check', passable: 'wave', wrong: 'x' };
@@ -41,7 +43,7 @@
       {@const g = app.grades[i]}
       <li class="card is-{g}">
         <div class="meta mono">
-          <span>#{String(i + 1).padStart(2, '0')} · {item.tense.mood} · {item.tense.name}</span>
+          <span class="tense {moodClass(item.tense.mood)}">#{String(i + 1).padStart(2, '0')} · <span class="mood-text">{item.tense.mood}</span> · <TenseShape id={item.tense.id} /> {item.tense.name}</span>
           <span class="status"><Icon name={ICON[g]} size={12} />{LABEL[g]}</span>
         </div>
         <span class="prompt">
@@ -132,6 +134,12 @@
     gap: 8px;
     font-size: 12px;
     color: var(--muted);
+  }
+  .tense {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
   }
   .status {
     display: inline-flex;

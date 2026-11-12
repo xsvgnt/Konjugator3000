@@ -3,6 +3,8 @@
   import { LANGUAGES } from '../languages';
   import { QUESTION_COUNTS, tensesByBlock } from '../quiz';
   import Icon from './Icon.svelte';
+  import { moodClass } from '../tenseStyle';
+  import TenseShape from './TenseShape.svelte';
 
   const blocks = $derived(app.data ? tensesByBlock(app.data.tenses) : []);
   const selectedIds = $derived(new Set(app.settings.tenses[app.settings.lang] ?? []));
@@ -67,7 +69,7 @@
         {@const ids = b.tenses.map((t) => t.id)}
         {@const all = ids.every((id) => selectedIds.has(id))}
         <div>
-          <h3 class="mood">
+          <h3 class="mood {moodClass(b.tenses[0].mood)}">
             <button type="button" class="block-toggle" onclick={() => toggleBlock(ids)} title={all ? `Clear ${b.block}` : `Select all of ${b.block}`}>
               {b.block}<span class="block-action">{all ? 'clear' : 'all'}</span>
             </button>
@@ -75,7 +77,7 @@
           <div class="chips">
             {#each b.tenses as t (t.id)}
               <button type="button" class="chip" aria-pressed={selectedIds.has(t.id)} onclick={() => app.toggleTense(t.id)}>
-                {t.name}
+                <TenseShape id={t.id} />{t.name}
               </button>
             {/each}
           </div>
@@ -186,7 +188,7 @@
     margin-bottom: 6px;
     font-size: 13px;
     font-weight: 500;
-    color: var(--subtle);
+    color: var(--mood, var(--subtle));
   }
   .block-toggle {
     display: inline-flex;
@@ -208,6 +210,11 @@
   .block-toggle:focus-visible .block-action {
     opacity: 1;
     color: var(--accent);
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
   .chips {
     display: flex;
